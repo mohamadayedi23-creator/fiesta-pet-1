@@ -141,7 +141,7 @@ export class ViewAnimalPage implements OnInit {
 
           alert(errorMsg)
         },
-        { timeout: 10000, enableHighAccuracy: true }
+        { timeout: 30000, enableHighAccuracy: false, maximumAge: 0 }
       )
     } else {
       alert("La géolocalisation n'est pas supportée par votre navigateur")
@@ -176,19 +176,17 @@ export class ViewAnimalPage implements OnInit {
           } else if (error.code === 2) {
             errorMsg = "Position indisponible. Vérifiez votre connexion GPS."
           } else if (error.code === 3) {
-            errorMsg = "Délai d'attente dépassé."
+            errorMsg = "Délai d'attente dépassé. Vérifiez votre connexion internet et réessayez."
           }
 
           alert(errorMsg)
         },
-        { timeout: 10000, enableHighAccuracy: true }
+        { timeout: 30000, enableHighAccuracy: false, maximumAge: 0 }
       )
     } else {
       alert("La géolocalisation n'est pas supportée par votre navigateur")
     }
   }
-
-
 
   shareViaWhatsApp(message: string) {
     const phoneNumber = this.petInfo?.phoneNumbers?.[0]?.replace(/[^0-9+]/g, "")
