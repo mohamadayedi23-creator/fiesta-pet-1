@@ -149,29 +149,39 @@ export class ViewAnimalPage implements OnInit {
   }
 
   async showShareOptions(message: string) {
-    const alert = await this.alertController.create({
-      header: "Choisir le moyen",
-      message: "Comment voulez-vous partager votre localisation ?",
-      buttons: [
-        {
-          text: "WhatsApp",
-          handler: () => {
-            this.shareViaWhatsApp(message)
+    try {
+      console.log("📢 Création du dialog de partage...")
+      const alertDialog = await this.alertController.create({
+        header: "Choisir le moyen",
+        message: "Comment voulez-vous partager votre localisation ?",
+        buttons: [
+          {
+            text: "WhatsApp",
+            handler: () => {
+              console.log("📱 Partage via WhatsApp...")
+              this.shareViaWhatsApp(message)
+            },
           },
-        },
-        {
-          text: "SMS",
-          handler: () => {
-            this.shareViaSMS(message)
+          {
+            text: "SMS",
+            handler: () => {
+              console.log("💬 Partage via SMS...")
+              this.shareViaSMS(message)
+            },
           },
-        },
-        {
-          text: "Annuler",
-          role: "cancel",
-        },
-      ],
-    })
-    await alert.present()
+          {
+            text: "Annuler",
+            role: "cancel",
+          },
+        ],
+      })
+      console.log("📢 Affichage du dialog...")
+      await alertDialog.present()
+      console.log("✅ Dialog présenté")
+    } catch (error) {
+      console.error("❌ Erreur lors de la création du dialog:", error)
+      alert("Erreur: " + (error instanceof Error ? error.message : String(error)))
+    }
   }
 
   shareViaWhatsApp(message: string) {
