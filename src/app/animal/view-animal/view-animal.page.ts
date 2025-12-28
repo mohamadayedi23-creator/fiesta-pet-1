@@ -5,6 +5,7 @@ import   { ActivatedRoute } from "@angular/router"
 import { RouterModule } from "@angular/router"
 import   { AnimalService } from "../../shared/services/animal.service"
 import   { Pet } from "../../shared/models/pet.model"
+import { AlertController } from "@ionic/angular"
 
 @Component({
   selector: "app-view-animal",
@@ -21,6 +22,7 @@ export class ViewAnimalPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private animalService: AnimalService,
+    private alertController: AlertController,
   ) {}
 
   ngOnInit() {
@@ -102,5 +104,74 @@ export class ViewAnimalPage implements OnInit {
         }
       }, 100)
     }
+  }
+
+  shareLocationViaWhatsApp() {
+    if (!this.petInfo?.phoneNumbers || this.petInfo.phoneNumbers.length === 0) {
+      alert("Numéro de téléphone non disponible")
+      return
+    }
+
+    // Request geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude
+          const lng = position.coords.longitude
+          const mapsLink = `https://maps.google.com/?q=${lat},${lng}`
+          const message = `J'ai trouvé ton animal et voilà ma localisation : ${mapsLink}`
+
+          // Show options to share via WhatsApp or SMS
+          this.showShareOptions(message)
+        },
+        (error) => {
+          console.error("Erreur geolocation:", error)
+          alert("Impossible d'accéder à votre localisation. Assurez-vous d'avoir donné les permissions.")
+        },
+      )
+    } else {
+      alert("La géolocalisation n'est pas supportée par votre navigateur")
+    }
+  }
+
+  async showShareOptions(message: string) {
+    const alert = await this.alertController.create({
+      header: "Choisir le moyen",
+      message: "Comment voulez-vous partager votre localisation ?",
+      buttons: [
+        {
+          text: "WhatsApp",
+          handler: () => {
+            this.shareViaWhatsApp(message)
+          },
+        },
+        {
+          text: "SMS",
+          handler: () => {
+            this.shareViaSMS(message)
+          },
+        },
+        {
+          text: "Annuler",
+          role: "cancel",
+        },
+      ],
+    })
+    await alert.present()
+  }
+
+  shareViaWhatsApp(message: string) {
+    const phoneNumber = this.petInfo?.phoneNumbers?.[0]?.replace(/[^0-9+]/g, "")
+    const formattedPhone = phoneNumber?.startsWith("+") ? phoneNumber : "+216" + phoneNumber
+    const encodedMessage = encodeURIComponent(message)
+    const whatsappLink = `https://wa.me/${formattedPhone}?text=${encodedMessage}`
+    window.open(whatsappLink, "_blank")
+  }
+
+  shareViaSMS(message: string) {
+    const phoneNumber = this.petInfo?.phoneNumbers?.[0]?.replace(/[^0-9+]/g, "")
+    const encodedMessage = encodeURIComponent(message)
+    const smsLink = `sms:${phoneNumber}?body=${encodedMessage}`
+    window.location.href = smsLink
   }
 }
