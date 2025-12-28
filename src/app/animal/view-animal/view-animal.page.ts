@@ -5,14 +5,14 @@ import   { ActivatedRoute } from "@angular/router"
 import { RouterModule } from "@angular/router"
 import   { AnimalService } from "../../shared/services/animal.service"
 import   { Pet } from "../../shared/models/pet.model"
-import { AlertController } from "@ionic/angular"
+import { AlertController, IonicModule } from "@ionic/angular"
 
 @Component({
   selector: "app-view-animal",
   templateUrl: "./view-animal.page.html",
   styleUrls: ["./view-animal.page.scss"],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, IonicModule],
 })
 export class ViewAnimalPage implements OnInit {
   petInfo: Pet | null = null
