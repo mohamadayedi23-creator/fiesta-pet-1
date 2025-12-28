@@ -123,8 +123,8 @@ export class ViewAnimalPage implements OnInit {
           const mapsLink = `https://maps.google.com/?q=${lat},${lng}`
           const message = `J'ai trouvé ton animal et voilà ma localisation : ${mapsLink}`
 
-          // Show options to share via WhatsApp or SMS
-          this.showShareOptions(message)
+          // Share directly via WhatsApp
+          this.shareViaWhatsApp(message)
         },
         (error) => {
           console.error("❌ Erreur geolocation:", error)
@@ -148,41 +148,47 @@ export class ViewAnimalPage implements OnInit {
     }
   }
 
-  async showShareOptions(message: string) {
-    try {
-      console.log("📢 Création du dialog de partage...")
-      const alertDialog = await this.alertController.create({
-        header: "Choisir le moyen",
-        message: "Comment voulez-vous partager votre localisation ?",
-        buttons: [
-          {
-            text: "WhatsApp",
-            handler: () => {
-              console.log("📱 Partage via WhatsApp...")
-              this.shareViaWhatsApp(message)
-            },
-          },
-          {
-            text: "SMS",
-            handler: () => {
-              console.log("💬 Partage via SMS...")
-              this.shareViaSMS(message)
-            },
-          },
-          {
-            text: "Annuler",
-            role: "cancel",
-          },
-        ],
-      })
-      console.log("📢 Affichage du dialog...")
-      await alertDialog.present()
-      console.log("✅ Dialog présenté")
-    } catch (error) {
-      console.error("❌ Erreur lors de la création du dialog:", error)
-      alert("Erreur: " + (error instanceof Error ? error.message : String(error)))
+  shareLocationViaSMS() {
+    if (!this.petInfo?.phoneNumbers || this.petInfo.phoneNumbers.length === 0) {
+      alert("Numéro de téléphone non disponible")
+      return
+    }
+
+    if (navigator.geolocation) {
+      console.log("🔍 Demande de géolocalisation pour SMS...")
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("✅ Géolocalisation obtenue:", position.coords)
+          const lat = position.coords.latitude
+          const lng = position.coords.longitude
+          const mapsLink = `https://maps.google.com/?q=${lat},${lng}`
+          const message = `J'ai trouvé ton animal et voilà ma localisation : ${mapsLink}`
+
+          this.shareViaSMS(message)
+        },
+        (error) => {
+          console.error("❌ Erreur geolocation:", error)
+          console.error("Code erreur:", error.code, "Message:", error.message)
+          let errorMsg = "Impossible d'accéder à votre localisation."
+
+          if (error.code === 1) {
+            errorMsg = "Permission refusée. Veuillez autoriser l'accès à votre localisation."
+          } else if (error.code === 2) {
+            errorMsg = "Position indisponible. Vérifiez votre connexion GPS."
+          } else if (error.code === 3) {
+            errorMsg = "Délai d'attente dépassé."
+          }
+
+          alert(errorMsg)
+        },
+        { timeout: 10000, enableHighAccuracy: true }
+      )
+    } else {
+      alert("La géolocalisation n'est pas supportée par votre navigateur")
     }
   }
+
+
 
   shareViaWhatsApp(message: string) {
     const phoneNumber = this.petInfo?.phoneNumbers?.[0]?.replace(/[^0-9+]/g, "")
