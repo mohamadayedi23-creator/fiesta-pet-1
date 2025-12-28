@@ -114,8 +114,10 @@ export class ViewAnimalPage implements OnInit {
 
     // Request geolocation
     if (navigator.geolocation) {
+      console.log("🔍 Demande de géolocalisation...")
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          console.log("✅ Géolocalisation obtenue:", position.coords)
           const lat = position.coords.latitude
           const lng = position.coords.longitude
           const mapsLink = `https://maps.google.com/?q=${lat},${lng}`
@@ -125,9 +127,21 @@ export class ViewAnimalPage implements OnInit {
           this.showShareOptions(message)
         },
         (error) => {
-          console.error("Erreur geolocation:", error)
-          alert("Impossible d'accéder à votre localisation. Assurez-vous d'avoir donné les permissions.")
+          console.error("❌ Erreur geolocation:", error)
+          console.error("Code erreur:", error.code, "Message:", error.message)
+          let errorMsg = "Impossible d'accéder à votre localisation."
+
+          if (error.code === 1) {
+            errorMsg = "Permission refusée. Veuillez autoriser l'accès à votre localisation."
+          } else if (error.code === 2) {
+            errorMsg = "Position indisponible. Vérifiez votre connexion GPS."
+          } else if (error.code === 3) {
+            errorMsg = "Délai d'attente dépassé."
+          }
+
+          alert(errorMsg)
         },
+        { timeout: 10000, enableHighAccuracy: true }
       )
     } else {
       alert("La géolocalisation n'est pas supportée par votre navigateur")
